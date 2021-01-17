@@ -1,23 +1,23 @@
 <template>
-<ul class="gallery-list library-gallery">
+  <ul class="gallery-list library-gallery">
     <movieItem
-    v-for="movie of movies"
-    v-bind:movie="movie"
-    v-bind:key="movie.id"
-     />
-</ul>
+      v-for="movie of movies"
+      v-bind:movie="movie"
+      v-bind:key="movie.id"
+    />
+  </ul>
 </template>
 
 <script>
 import movieItem from "./movieItem";
 export default {
-    props: ["movies"],
-    components: {movieItem},
-}
+  props: ["movies"],
+  components: { movieItem },
+};
 </script>
 
 <style>
- .gallery-list {
+.gallery-list {
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;

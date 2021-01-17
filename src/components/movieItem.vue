@@ -1,40 +1,62 @@
 <template>
-<li class="gallery-item library-gallery__item">
-  <div class="gallery-item-block">
-<img :src="baseURL + movie.backdrop_path" :alt="movie.original_title" :width="'100%'" :height="'100%'"
-                        class="gallery-item__image library-gallery__image" />
-        <p class="gallery-item__name library-gallery__name">{{movie.title}}<span class="gallery-item__date">
-                        ({{movie.release_date.slice(0, 4)}})</span></p>
-        <p class="gallery-item__rating library-gallery__rating">{{movie.vote_average}}</p>
-         <div v-if="movie.isAddedToLibrary" class="liked"></div>
-  </div>
-        <div class="gallery-item__overlay">
-        <button v-if="!movie.isAddedToLibrary" @click="addToGallery(movie.id)" class="gallery-item__button">Add to library</button>
-        <button v-if="movie.isAddedToLibrary" @click="deleteFromGallery(movie.id)" class="gallery-item__button">Delete from library</button>
-        </div>
-       
-</li>
+  <li class="gallery-item library-gallery__item">
+    <div class="gallery-item-block">
+      <img
+        :src="baseURL + movie.backdrop_path"
+        :alt="movie.original_title"
+        :width="'100%'"
+        :height="'100%'"
+        class="gallery-item__image library-gallery__image"
+      />
+      <p class="gallery-item__name library-gallery__name">
+        {{ movie.title
+        }}<span class="gallery-item__date">
+          ({{ movie.release_date.slice(0, 4) }})</span
+        >
+      </p>
+      <p class="gallery-item__rating library-gallery__rating">
+        {{ movie.vote_average }}
+      </p>
+      <div v-if="movie.isAddedToLibrary" class="liked"></div>
+    </div>
+    <div class="gallery-item__overlay">
+      <button
+        v-if="!movie.isAddedToLibrary"
+        @click="addToGallery(movie.id)"
+        class="gallery-item__button"
+      >
+        Add to library
+      </button>
+      <button
+        v-if="movie.isAddedToLibrary"
+        @click="deleteFromGallery(movie.id)"
+        class="gallery-item__button"
+      >
+        Delete from library
+      </button>
+    </div>
+  </li>
 </template>
 
 <script>
-import EventBus from './../event-bus'
+import EventBus from "./../event-bus";
 
 export default {
-    props: ["movie"],
-    methods: {
-      addToGallery(id) {
-        EventBus.$emit('add-to-gallery', id)
-      },
-      deleteFromGallery(id) {
-        EventBus.$emit('delete-from-gallery', id)
-      },
+  props: ["movie"],
+  methods: {
+    addToGallery(id) {
+      EventBus.$emit("add-to-gallery", id);
     },
-    data() {
-      return {
-baseURL: "https://image.tmdb.org/t/p/w500",
-      }
-    }
-}
+    deleteFromGallery(id) {
+      EventBus.$emit("delete-from-gallery", id);
+    },
+  },
+  data() {
+    return {
+      baseURL: "https://image.tmdb.org/t/p/w500",
+    };
+  },
+};
 </script>
 
 <style>
@@ -51,7 +73,7 @@ baseURL: "https://image.tmdb.org/t/p/w500",
 }
 
 .gallery-item-block {
-height: 100%;
+  height: 100%;
 }
 
 @media screen and (max-width: 767px) {
@@ -120,7 +142,8 @@ height: 100%;
     height: 17px;
     background-color: #fff;
     border-radius: 6px;
-    box-shadow: inset 0px 0px 2.79px 0.21px rgba(0, 0, 0, 0.35), inset 0px 0px 2.64px 1.36px rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0px 0px 2.79px 0.21px rgba(0, 0, 0, 0.35),
+      inset 0px 0px 2.64px 1.36px rgba(0, 0, 0, 0.35);
   }
 }
 @media screen and (min-width: 1024px) and (min-width: 768px) {
@@ -146,7 +169,7 @@ height: 100%;
   margin-bottom: 10px;
 }
 @media (min-width: 768px) {
-  .library-gallery__item:not(:nth-last-child(-n+2)) {
+  .library-gallery__item:not(:nth-last-child(-n + 2)) {
     margin-bottom: 20px;
   }
 }
@@ -205,7 +228,8 @@ height: 100%;
   height: 17px;
   background-color: #fff;
   border-radius: 6px;
-  box-shadow: inset 0px 0px 2.79px 0.21px rgba(0, 0, 0, 0.35), inset 0px 0px 2.64px 1.36px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0px 0px 2.79px 0.21px rgba(0, 0, 0, 0.35),
+    inset 0px 0px 2.64px 1.36px rgba(0, 0, 0, 0.35);
 }
 @media screen and (min-width: 768px) {
   .library-gallery__rating {
@@ -227,7 +251,7 @@ height: 100%;
   margin-bottom: 10px;
 }
 @media (min-width: 768px) {
-  .library-gallery:not(:nth-last-child(-n+2)) {
+  .library-gallery:not(:nth-last-child(-n + 2)) {
     margin-bottom: 20px;
   }
 }
@@ -274,12 +298,12 @@ height: 100%;
   border: 1px solid white;
   border-radius: 5px;
   color: white;
-margin: auto auto;
-background-color: transparent;
-width: 40%;
-height: 30px;
-cursor: pointer;
-outline: none;
+  margin: auto auto;
+  background-color: transparent;
+  width: 40%;
+  height: 30px;
+  cursor: pointer;
+  outline: none;
 }
 
 .gallery-item__button:hover {
@@ -288,15 +312,15 @@ outline: none;
 }
 
 .gallery-item__notification {
-   font-size: 14px;
-   padding-top: 5px;
+  font-size: 14px;
+  padding-top: 5px;
   border: 1px solid white;
   border-radius: 5px;
   color: white;
-margin: auto auto;
-background-color: transparent;
-width: 40%;
-height: 30px;
-outline: none;
+  margin: auto auto;
+  background-color: transparent;
+  width: 40%;
+  height: 30px;
+  outline: none;
 }
 </style>

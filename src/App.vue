@@ -1,13 +1,17 @@
 <template>
   <div id="app">
     <div class="container wrapper">
-      <button v-on:click="applyChanges(filterByGenre, filterByRating, sortMovies, filter.filteredByGenre, filter.filteredByRating, filter.sortedValue)">Apply</button>
-<Header />
-<main>
-<router-view v-if="!loading" :popularMovies="filteredMovies" :likedMovies="likedMovies" :genres="genres" />
-<Loader v-if="loading" />
-</main>
-<Footer />
+      <Header />
+      <main>
+        <router-view
+          v-if="!loading"
+          :popularMovies="filteredMovies"
+          :likedMovies="likedMovies"
+          :genres="genres"
+        />
+        <Loader v-if="loading" />
+      </main>
+      <Footer />
     </div>
   </div>
 </template>
@@ -15,12 +19,11 @@
 <script>
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import api from './api-service';
-  import EventBus from './event-bus';
-  import  Loader from './components/loader';
+import api from "./api-service";
+import EventBus from "./event-bus";
+import Loader from "./components/loader";
 
 export default {
-
   data() {
     return {
       popularMovies: [],
@@ -32,104 +35,135 @@ export default {
         filteredByGenre: "",
         filteredByRating: "",
         sortedValue: "",
+      },
+    };
+  },
+
+  name: "app",
+  components: { Header, Footer, Loader },
+  methods: {
+    //Add movie depend on id
+    addToLibrary(id) {
+      let addedMovie = this.popularMovies.find((el) => el.id === id);
+      addedMovie.isAddedToLibrary = true;
+      this.likedMovies.push(addedMovie);
+    },
+    //Delete movie depend on id
+    deleteFromLibrary(id) {
+      let deletedMovie = this.popularMovies.find((el) => el.id === id);
+      deletedMovie.isAddedToLibrary = false;
+      this.likedMovies = this.likedMovies.filter((el) => el.id !== id);
+    },
+    //Filter movies by genre
+    filterByGenre(value, movies) {
+      if (!value) {
+        return movies;
       }
-    }
+      if (value === "none") {
+        return (movies = this.popularMovies);
+      }
+      return (movies = movies.filter((el) =>
+        el.genre_ids.find((el) => el === value)
+      ));
+    },
+    //Filter movies by rating
+    filterByRating(value, movies) {
+      if (value.trim() === "") {
+        return movies;
+      }
+      return (movies = movies.filter((el) => el.vote_average >= value));
+    },
+    //Sort movies depend on value of sorting
+    sortMovies(value, movies) {
+      if (value.trim() === "") {
+        return movies;
+      }
+      switch (value) {
+        case "sort-old-new":
+          return (movies = movies.sort(
+            (a, b) => a.release_date.slice(0, 4) - b.release_date.slice(0, 4)
+          ));
+
+        case "sort-new-old":
+          return (movies = movies.sort(
+            (a, b) => b.release_date.slice(0, 4) - a.release_date.slice(0, 4)
+          ));
+
+        case "sort-high-low":
+          return (movies = movies.sort(
+            (a, b) => b.vote_average - a.vote_average
+          ));
+
+        case "sort-low-high":
+          return (movies = movies.sort(
+            (a, b) => a.vote_average - b.vote_average
+          ));
+
+        case "default":
+          return (movies = this.popularMovies);
+
+        default:
+          return;
+      }
+    },
+    //Apply all changes chosen in filters
+    applyChanges(
+      genreFunc,
+      ratingFunc,
+      sortFunc,
+      genreValue,
+      ratingValue,
+      sortValue
+    ) {
+      this.filteredMovies = sortFunc(
+        sortValue,
+        ratingFunc(ratingValue, genreFunc(genreValue, this.popularMovies))
+      );
+    },
   },
 
-name: "app",
-components: {Header, Footer, Loader },
-methods: {
-  addToLibrary(id) {
-let addedMovie = this.popularMovies.find(el => el.id === id);
-addedMovie.isAddedToLibrary = true;
-this.likedMovies.push(addedMovie);
+  mounted() {
+    api
+      .getPopularMovies()
+      .then((res) => res.map((el) => (el = { ...el, isAddedToLibrary: false })))
+      .then(
+        (arr) => (
+          (this.popularMovies = [...arr]),
+          (this.filteredMovies = [...arr]),
+          (this.loading = false)
+        )
+      );
+    api.getGenres().then((res) => (this.genres = [...res]));
+    EventBus.$on("add-to-gallery", (id) => {
+      this.addToLibrary(id);
+    }),
+      EventBus.$on("delete-from-gallery", (id) => {
+        this.deleteFromLibrary(id);
+      }),
+      EventBus.$on("filter-genre", (value) => {
+        this.filter.filteredByGenre = value;
+      }),
+      EventBus.$on("filter-rating", (value) => {
+        this.filter.filteredByRating = value;
+      }),
+      EventBus.$on("sort-movies", (value) => {
+        this.filter.sortedValue = value;
+      }),
+      EventBus.$on("apply-changes", () => {
+        this.applyChanges(
+          this.filterByGenre,
+          this.filterByRating,
+          this.sortMovies,
+          this.filter.filteredByGenre,
+          this.filter.filteredByRating,
+          this.filter.sortedValue
+        );
+      });
   },
-
-  deleteFromLibrary(id) {
-    let deletedMovie = this.popularMovies.find(el => el.id === id);
-    deletedMovie.isAddedToLibrary = false;
-this.likedMovies = this.likedMovies.filter(el => el.id !== id);
-  },
-
-  filterByGenre(value, movies) {
-    console.log(`genre`, value, movies);
-    if (!value) {
-      return movies;
-    }
-    if (value === "none") {
-      return movies = this.popularMovies;
-    }
-    return movies = movies.filter(el => el.genre_ids.find(el => el === value));
-  },
-
-  filterByRating(value, movies) {
-    if (value.trim() === "") {
-      return movies;
-    }
-    console.log(`rating`, value, movies);
-    return movies = movies.filter(el => el.vote_average >= value);
-  },
-
-  sortMovies(value, movies) {
-    if (value.trim() === "") {
-      return movies;
-    }
-    console.log(`sortMovies`, value, movies);
-    switch(value) {
-      case "sort-old-new":
-      return movies = movies.sort((a, b) => a.release_date.slice(0,4) - b.release_date.slice(0,4));
-
-      case "sort-new-old": 
-      return movies = movies.sort((a, b) => b.release_date.slice(0,4) - a.release_date.slice(0,4));
-
-      case "sort-high-low": 
-      return movies = movies.sort((a, b) => b.vote_average - a.vote_average);
-
-      case "sort-low-high": 
-      return movies = movies.sort((a, b) => a.vote_average - b.vote_average);
-
-      case "default": 
-      return movies = this.popularMovies;
-
-      default: return;
-    }
-  },
-
-  applyChanges(genreFunc, ratingFunc, sortFunc, genreValue, ratingValue, sortValue) {
-this.filteredMovies = sortFunc(sortValue, ratingFunc(ratingValue, (genreFunc(genreValue, this.popularMovies))))
-  },
-},
-
-mounted() {
-api.getPopularMovies().then(res => res.map(el => el = {...el, isAddedToLibrary: false})).then(arr => (this.popularMovies = [...arr], this.filteredMovies = [...arr], this.loading = false));
-api.getGenres().then(res => this.genres = [...res]);
- EventBus.$on('add-to-gallery', id => {
-    this.addToLibrary(id);
-  }),
-
-   EventBus.$on('delete-from-gallery', id => {
-    this.deleteFromLibrary(id);
-  }),
-
-  EventBus.$on('filter-genre', value => {
-    this.filter.filteredByGenre = value;
-  }),
-
-  EventBus.$on('filter-rating', value => {
-    this.filter.filteredByRating = value;
-  }),
-
-  EventBus.$on('sort-movies', value => {
-    this.filter.sortedValue = value;
-  })
-
-},
-
-}
+};
 </script>
 
 <style>
-
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -194,7 +228,7 @@ a {
 }
 
 .clearfix {
-  content: '';
+  content: "";
   display: table;
   clear: both;
 }
@@ -221,5 +255,4 @@ footer {
   display: flex;
   flex-direction: column;
 }
-
 </style>

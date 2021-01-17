@@ -5,6 +5,7 @@
 <filterGenres :genres="genres"/>
 <filterRating />
 <sort />
+<button class="filters__button" v-on:click="applyChanges">Apply</button>
     </div>
 
         </section>
@@ -20,6 +21,7 @@ import moviesList from '../components/moviesList';
 import filterGenres from '../components/filter-genres';
 import filterRating from '../components/filter-rating';
 import sort from '../components/sort';
+import EventBus from './../event-bus'
 
 export default {
   props: ['popularMovies', 'genres'],
@@ -27,6 +29,9 @@ export default {
   methods: {
       addToLibrary(id) {
         this.$emit('add-to-library', id);
+      },
+      applyChanges() {
+        EventBus.$emit('apply-changes');
       }
     },
 }
@@ -35,7 +40,7 @@ export default {
 <style>
 .filters {
   width: 100%;
-  height: 67px;
+  height: auto;
   padding: 10px 0 10px;
   font-family: 'Roboto', sans-serif;
   box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
@@ -43,10 +48,18 @@ export default {
 }
 
 .filters__wrapper {
-  display: flex;
-  margin: 0 auto;
-  justify-content: space-between;
-  width: 80%;
+  display: block;
+}
+
+.filters__button {
+  display: block;
+  width: 30%;
+  height: 25px;
+  margin: 15px auto 0 auto;
+outline: none;
+border: 1px solid black;
+border-radius: 4px;
+background-color: transparent;
 }
 
 .gallery {
@@ -60,5 +73,17 @@ export default {
   .library {
     padding: 28px 0;
   }
+
+  .filters__wrapper {
+  display: flex;
+  margin: 0 auto;
+  justify-content: space-between;
+  width: 90%;
+}
+
+.filters__button {
+  width: 15%;
+}
+
 }
 </style>
