@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="container wrapper">
-      <button @:click="applyChanges">Apply</button>
+      <button v-on:click="applyChanges(filterByGenre, filterByRating, sortMovies, filter.filteredByGenre, filter.filteredByRating, filter.sortedValue)">Apply</button>
 <Header />
 <main>
 <router-view v-if="!loading" :popularMovies="filteredMovies" :likedMovies="likedMovies" :genres="genres" />
@@ -28,6 +28,11 @@ export default {
       likedMovies: [],
       genres: [],
       loading: true,
+      filter: {
+        filteredByGenre: "",
+        filteredByRating: "",
+        sortedValue: "",
+      }
     }
   },
 
@@ -46,48 +51,52 @@ this.likedMovies.push(addedMovie);
 this.likedMovies = this.likedMovies.filter(el => el.id !== id);
   },
 
-  filterByGenre(value) {
-    console.log(value);
-    if (value === "none") {
-      this.filteredMovies = this.popularMovies;
-      return;
+  filterByGenre(value, movies) {
+    console.log(`genre`, value, movies);
+    if (!value) {
+      return movies;
     }
-    this.filteredMovies = this.popularMovies.filter(el => el.genre_ids.find(el => el === value));
+    if (value === "none") {
+      return movies = this.popularMovies;
+    }
+    return movies = movies.filter(el => el.genre_ids.find(el => el === value));
   },
 
-  filterByRating(value) {
-    this.filteredMovies = this.popularMovies.filter(el => el.vote_average >= value);
+  filterByRating(value, movies) {
+    if (value.trim() === "") {
+      return movies;
+    }
+    console.log(`rating`, value, movies);
+    return movies = movies.filter(el => el.vote_average >= value);
   },
 
-  sortMovies(value) {
+  sortMovies(value, movies) {
+    if (value.trim() === "") {
+      return movies;
+    }
+    console.log(`sortMovies`, value, movies);
     switch(value) {
       case "sort-old-new":
-        console.log(this.filteredMovies[0].release_date);
-      this.filteredMovies = [...this.filteredMovies].sort((a, b) => a.release_date.slice(0,4) - b.release_date.slice(0,4));
-      break;
+      return movies = movies.sort((a, b) => a.release_date.slice(0,4) - b.release_date.slice(0,4));
 
       case "sort-new-old": 
-      this.filteredMovies = [...this.filteredMovies].sort((a, b) => b.release_date.slice(0,4) - a.release_date.slice(0,4));
-      break;
+      return movies = movies.sort((a, b) => b.release_date.slice(0,4) - a.release_date.slice(0,4));
 
       case "sort-high-low": 
-      this.filteredMovies = [...this.filteredMovies].sort((a, b) => b.vote_average - a.vote_average);
-      break;
+      return movies = movies.sort((a, b) => b.vote_average - a.vote_average);
 
       case "sort-low-high": 
-      this.filteredMovies = [...this.filteredMovies].sort((a, b) => a.vote_average - b.vote_average);
-      break;
+      return movies = movies.sort((a, b) => a.vote_average - b.vote_average);
 
       case "default": 
-      this.filteredMovies = this.popularMovies;
-      break;
+      return movies = this.popularMovies;
 
       default: return;
     }
   },
 
-  applyChanges() {
-
+  applyChanges(genreFunc, ratingFunc, sortFunc, genreValue, ratingValue, sortValue) {
+this.filteredMovies = sortFunc(sortValue, ratingFunc(ratingValue, (genreFunc(genreValue, this.popularMovies))))
   },
 },
 
@@ -103,16 +112,17 @@ api.getGenres().then(res => this.genres = [...res]);
   }),
 
   EventBus.$on('filter-genre', value => {
-    this.filterByGenre(value);
+    this.filter.filteredByGenre = value;
   }),
 
   EventBus.$on('filter-rating', value => {
-    this.filterByRating(value);
+    this.filter.filteredByRating = value;
   }),
 
   EventBus.$on('sort-movies', value => {
-    this.sortMovies(value);
+    this.filter.sortedValue = value;
   })
+
 },
 
 }
